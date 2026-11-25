@@ -1,0 +1,26 @@
+code,name,email,major_code,title,is_head
+GV01,TS. Nguyễn Văn An,an.nv@truong.edu.vn,KTPM,Trưởng bộ môn KTPM,true
+GV02,ThS. Trần Thị Bình,binh.tt@truong.edu.vn,KTPM,Giảng viên chính,false
+GV03,TS. Lê Hoàng Cường,cuong.lh@truong.edu.vn,KTPM,Giảng viên,false
+GV04,ThS. Phạm Minh Đức,duc.pm@truong.edu.vn,KTPM,Giảng viên,false
+GV05,TS. Hoàng Thu Hà,ha.ht@truong.edu.vn,KTPM,Giảng viên,false
+GV06,PGS.TS. Vũ Trọng Hải,hai.vt@truong.edu.vn,KHMT,Trưởng bộ môn KHMT,true
+GV07,TS. Đỗ Ngọc Hùng,hung.dn@truong.edu.vn,KHMT,Giảng viên,false
+GV08,ThS. Bùi Tuyết Mai,mai.bt@truong.edu.vn,KHMT,Giảng viên,false
+GV09,TS. Ngô Văn Nam,nam.nv@truong.edu.vn,KHMT,Giảng viên,false
+GV10,ThS. Đặng Thị Oanh,oanh.dt@truong.edu.vn,KHMT,Giảng viên,false
+GV11,TS. Phan Văn Phúc,phuc.pv@truong.edu.vn,HTTT,Trưởng bộ môn HTTT,true
+GV12,ThS. Trịnh Quốc Quân,quan.tq@truong.edu.vn,HTTT,Giảng viên,false
+GV13,TS. Cao Thị Sen,sen.ct@truong.edu.vn,HTTT,Giảng viên,false
+GV14,ThS. Đinh Quang Thắng,thang.dq@truong.edu.vn,HTTT,Giảng viên,false
+GV15,TS. Mai Xuân Thành,thanh.mx@truong.edu.vn,HTTT,Giảng viên,false
+GV16,PGS.TS. Lâm Quốc Tuấn,tuan.lq@truong.edu.vn,QTKD,Trưởng bộ môn QTKD,true
+GV17,TS. Hà Thị Uyên,uyen.ht@truong.edu.vn,QTKD,Giảng viên,false
+GV18,ThS. Vương Văn Vũ,vu.vv@truong.edu.vn,QTKD,Giảng viên,false
+GV19,TS. Tạ Ngọc Yến,yen.tn@truong.edu.vn,QTKD,Giảng viên,false
+GV20,ThS. Chu Đình Anh,anh.cd@truong.edu.vn,QTKD,Giảng viên,false
+GV21,TS. Dương Bảo Châu,chau.db@truong.edu.vn,TCNH,Trưởng bộ môn TCNH,true
+GV22,ThS. Lương Thị Diệp,diep.lt@truong.edu.vn,TCNH,Giảng viên,false
+GV23,TS. Tống Văn Giang,giang.tv@truong.edu.vn,TCNH,Giảng viên,false
+GV24,ThS. Khổng Minh Hiếu,hieu.km@truong.edu.vn,TCNH,Giảng viên,false
+GV25,TS. Tăng Thị Khánh,khanh.tt@truong.edu.vn,TCNH,Giảng viên,false

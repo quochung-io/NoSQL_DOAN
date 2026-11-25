@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Chủ Đề Nhu Cầu (Admin){% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-bullseye text-primary me-2"></i>Quản lý Chủ Đề Nhu Cầu & Phân Công Giảng Viên
+            </h4>
+            <p class="text-muted small mb-0">Thiết lập các chủ đề xử lý (hoãn thi, phúc khảo, đồ án...) và gán nhiều giảng viên phụ trách (N - N)</p>
+        </div>
+        <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addTopicModal">
+            <i class="fa-solid fa-plus me-1"></i>Tạo Chủ Đề Mới
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    {% for t in topics %}
+        <div class="col-md-6 mb-4">
+            <div class="card card-modern h-100 shadow-sm border-0 p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-bold text-primary mb-0">{{ t.topic_name }}</h5>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm rounded-circle me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ t.uid }}" style="width: 32px; height: 32px; padding: 0;">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <form method="POST" action="{{ url_for('admin.delete_topic', topic_uid=t.uid) }}" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa chủ đề này?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0;">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <p class="small text-muted mb-3">{{ t.description }}</p>
+
+                <div class="mt-auto">
+                    <span class="small fw-bold text-secondary d-block mb-1">
+                        <i class="fa-solid fa-users-gear me-1"></i>Giảng viên / Đơn vị phụ trách ({{ t.handles|length }}):
+                    </span>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for h in t.handles %}
+                            <span class="badge bg-light text-dark border rounded-pill">
+                                {{ h.name }} ({{ h.title or 'GV' }})
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill">Chưa phân công</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Sửa Chủ Đề -->
+            <div class="modal fade" id="editModal{{ t.uid }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content rounded-4 border-0 shadow">
+                        <form method="POST" action="{{ url_for('admin.update_topic', topic_uid=t.uid) }}">
+                            <div class="modal-header">
+                                <h5 class="modal-title fw-bold">Chỉnh sửa chủ đề</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Tên chủ đề</label>
+                                    <input type="text" name="topic_name" class="form-control" value="{{ t.topic_name }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Mô tả hướng dẫn</label>
+                                    <textarea name="description" class="form-control" rows="2">{{ t.description }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Chọn các Giảng viên phụ trách (Giữ Ctrl để chọn nhiều)</label>
+                                    <select name="lecturer_uids" class="form-select" multiple size="7">
+                                        {% set current_handles = t.handles|map(attribute='uid')|list %}
+                                        {% for gv in lecturers %}
+                                            <option value="{{ gv.uid }}" {% if gv.uid in current_handles %}selected{% endif %}>
+                                                {{ gv.name }} ({{ gv.title }}) - {{ gv.faculty.name or '' }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary rounded-pill fw-bold">Lưu thay đổi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Modal Thêm Chủ Đề Mới -->
+<div class="modal fade" id="addTopicModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <form method="POST" action="{{ url_for('admin.add_topic') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Thêm Chủ Đề Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tên chủ đề nhu cầu</label>
+                        <input type="text" name="topic_name" class="form-control" placeholder="Ví dụ: Đăng ký học phần thay thế tốt nghiệp..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mô tả hướng dẫn</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Nội dung hướng dẫn sinh viên..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Phân công các Giảng viên phụ trách (Có thể chọn nhiều GV)</label>
+                        <select name="lecturer_uids" class="form-select" multiple size="7">
+                            {% for gv in lecturers %}
+                                <option value="{{ gv.uid }}">{{ gv.name }} ({{ gv.title }}) - {{ gv.faculty.name or '' }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Nhấn giữ phím Ctrl để chọn đồng thời nhiều giảng viên.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary rounded-pill fw-bold">Tạo chủ đề</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

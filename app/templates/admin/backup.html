@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Backup & Restore Dgraph{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="fw-bold text-primary mb-1">
+            <i class="fa-solid fa-database me-2"></i>Quản Trị Vận Hành: Backup, Restore & Giả Lập Sự Cố
+        </h4>
+        <p class="text-muted small">Phục vụ mục 6 của Barem chấm điểm (Export/Import & Backup/Restore CSDL Dgraph)</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Sao lưu dữ liệu (Backup) -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-cloud-arrow-down me-2"></i>Sao Lưu (Backup / Export)</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">Xuất toàn bộ cấu trúc Node và Edge của CSDL đồ thị Dgraph ra tệp định dạng JSON dự phòng.</p>
+                <form method="POST">
+                    <input type="hidden" name="action" value="backup">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">
+                        <i class="fa-solid fa-download me-1"></i>Xuất Bản Sao Lưu Ngay
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phục hồi dữ liệu (Restore) -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-success text-white py-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-cloud-arrow-up me-2"></i>Phục Hồi (Restore)</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">Nạp lại Schema, chỉ mục và khôi phục toàn bộ quan hệ trong đồ thị về trạng thái hoạt động chuẩn.</p>
+                <form method="POST">
+                    <input type="hidden" name="action" value="restore">
+                    <button type="submit" class="btn btn-success w-100 fw-bold">
+                        <i class="fa-solid fa-rotate-left me-1"></i>Phục Hồi Dữ Liệu
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Giả lập sự cố mất dữ liệu -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0 border-danger border-2 h-100">
+            <div class="card-header bg-danger text-white py-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-triangle-exclamation me-2"></i>Giả Lập Sự Cố (Drop All)</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">Xóa sạch toàn bộ dữ liệu trong Dgraph để minh họa kịch bản khắc phục thảm họa trước hội đồng chấm thi.</p>
+                <form method="POST" onsubmit="return confirm('CẢNH BÁO: Thao tác này sẽ xóa sạch dữ liệu trong Dgraph. Bạn có chắc muốn giả lập sự cố?');">
+                    <input type="hidden" name="action" value="simulate_disaster">
+                    <button type="submit" class="btn btn-outline-danger w-100 fw-bold">
+                        <i class="fa-solid fa-bomb me-1"></i>Kích Hoạt Giả Lập Mất Dữ Liệu
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Bảng Quản Trị Hệ Thống{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="fw-bold text-dark mb-1">
+            <i class="fa-solid fa-gauge-high text-primary me-2"></i>Bảng Điều Khiển Quản Trị (Admin Portal)
+        </h4>
+        <p class="text-muted small">Quản lý tổng thể tài khoản, vận hành cơ sở dữ liệu đồ thị Dgraph và theo dõi nhật ký</p>
+    </div>
+</div>
+
+<!-- Metrics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card card-modern shadow-sm border-0 bg-primary text-white p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase small mb-1 opacity-75">Tổng Số Tài Khoản</h6>
+                    <h2 class="fw-bold mb-0">{{ total_users }}</h2>
+                </div>
+                <i class="fa-solid fa-users fa-3x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card card-modern shadow-sm border-0 bg-success text-white p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase small mb-1 opacity-75">CSDL Đồ Thị Dgraph</h6>
+                    <h2 class="fw-bold mb-0">ONLINE</h2>
+                </div>
+                <i class="fa-solid fa-server fa-3x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card card-modern shadow-sm border-0 bg-info text-white p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase small mb-1 opacity-75">Lượt Xem Gần Nhất</h6>
+                    <h2 class="fw-bold mb-0">{{ recent_logs|length }}</h2>
+                </div>
+                <i class="fa-solid fa-chart-line fa-3x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top View & Access Log -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card card-modern shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0 text-primary"><i class="fa-solid fa-star me-2 text-warning"></i>Top Giảng Viên Được Tra Cứu Nhiều Nhất</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for gv in top_lecturers %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <div>
+                                <span class="fw-bold text-dark">{{ gv.name }}</span>
+                                <small class="text-muted d-block">{{ gv.code }}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill px-3">{{ gv.view_count }} lượt xem</span>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item text-center py-4 text-muted">Chưa có lượt tra cứu nào được ghi nhận.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card card-modern shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0 text-primary"><i class="fa-solid fa-clock-rotate-left me-2 text-secondary"></i>Nhật Ký Truy Cập Mới Nhất (AccessLog)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Người xem</th>
+                                <th>Giảng viên</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                                <tr>
+                                    <td>{{ log.viewed_at[:19] if log.viewed_at else '-' }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ log.viewer_username }}</span></td>
+                                    <td class="fw-semibold text-primary">{{ log.target_name }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-muted">Chưa có nhật ký truy cập.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

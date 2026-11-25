@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Hộp Thư Tin Nhắn - Messenger{% endblock %}
+
+{% block content %}
+<!-- Thanh liên hệ nhanh với Admin và Cán bộ khoa (Trưởng khoa) -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-modern border-0 shadow-sm p-3 bg-white">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <div>
+                        <span class="fw-bold text-dark small d-block">Kênh Hỗ Trợ Nhanh:</span>
+                        <span class="text-muted" style="font-size: 0.8rem;">Cần giải đáp thắc mắc hoặc hỗ trợ kỹ thuật? Nhắn tin trực tiếp ngay:</span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    {% if support_contacts.admin %}
+                        <a href="{{ url_for('chat.messenger', with=support_contacts.admin.uid) }}" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">
+                            <i class="fa-solid fa-shield-halved me-1 text-danger"></i>Nhắn Admin
+                        </a>
+                    {% endif %}
+
+                    {% if support_contacts.staff %}
+                        <a href="{{ url_for('chat.messenger', with=support_contacts.staff.uid) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold">
+                            <i class="fa-solid fa-building-columns me-1"></i>Nhắn Cán Bộ Khoa (Trưởng Khoa)
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="messenger-container">
+            <!-- Cột trái: Danh sách cuộc trò chuyện đã nhắn -->
+            <div class="messenger-sidebar">
+                <div class="sidebar-header d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="fa-brands fa-facebook-messenger text-primary me-2"></i>Cuộc Trò Chuyện
+                    </h6>
+                    <span class="badge bg-light text-muted border rounded-pill small">{{ contacts|length }}</span>
+                </div>
+
+                <div class="sidebar-search">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                        <input type="text" id="contactSearchInput" class="form-control border-start-0" placeholder="Lọc cuộc trò chuyện...">
+                    </div>
+                </div>
+
+                <div class="contact-list" id="contactList">
+                    {% for c in contacts %}
+                        <a href="{{ url_for('chat.messenger', with=c.uid) }}" class="contact-item {% if selected_partner and selected_partner.uid == c.uid %}active{% endif %}" data-name="{{ c.name|lower }}">
+                            <div class="avatar-wrapper">
+                                {{ c.name[:1] }}
+                                <span class="status-dot"></span>
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="fw-bold text-truncate small text-dark">{{ c.name }}</div>
+                                    <span class="badge bg-light text-secondary border" style="font-size: 0.65rem;">
+                                        {% if c.role == 'lecturer' %}GV
+                                        {% elif c.role == 'student' %}SV
+                                        {% elif c.role == 'staff' %}Cán bộ
+                                        {% else %}Admin{% endif %}
+                                    </span>
+                                </div>
+                                <div class="text-muted text-truncate" style="font-size: 0.75rem;">
+                                    {{ c.last_message or c.sub_info }}
+                                </div>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="text-center py-5 px-3 text-muted">
+                            <i class="fa-regular fa-comments fa-3x mb-3 text-secondary opacity-50"></i>
+                            <h6 class="fw-semibold small text-dark">Chưa có tin nhắn nào</h6>
+                            <p class="small text-muted mb-0">Khi bạn hoặc ai đó gửi tin nhắn, cuộc trò chuyện sẽ tự động xuất hiện tại đây.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Cột phải: Cửa sổ Chat Chính -->
+            <div class="messenger-chat-area">
+                {% if selected_partner %}
+                    <!-- Header cuộc trò chuyện -->
+                    <div class="chat-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-wrapper" style="width: 40px; height: 40px;">
+                                {{ selected_partner.name[:1] }}
+                                <span class="status-dot"></span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">{{ selected_partner.name }}</h6>
+                                <small class="text-muted">{{ selected_partner.sub_info }}</small>
+                            </div>
+                        </div>
+
+                        <div>
+                            {% if selected_partner.role == 'lecturer' %}
+                                <a href="{{ url_for('student.lecturer_detail', uid=selected_partner.uid) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                    <i class="fa-solid fa-address-card me-1"></i>Xem thẻ GV
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Khung bong bóng tin nhắn (Chat Messages) -->
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="text-center py-4 text-muted small" id="loadingMessages">
+                            <i class="fa-solid fa-spinner fa-spin me-1"></i>Đang tải tin nhắn...
+                        </div>
+                    </div>
+
+                    <!-- Ô nhập tin nhắn bên dưới -->
+                    <div class="chat-footer">
+                        <input type="text" id="messageInput" class="form-control chat-input" placeholder="Nhập tin nhắn... (Nhấn Enter để gửi)" autocomplete="off">
+                        <button type="button" id="btnSendMessage" class="btn-send-chat" title="Gửi tin nhắn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                {% else %}
+                    <!-- Chưa chọn người liên hệ -->
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted p-4 text-center">
+                        <div class="rounded-circle bg-light p-4 mb-3">
+                            <i class="fa-brands fa-facebook-messenger fa-4x text-primary opacity-50"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Chào mừng bạn đến với Hộp thư tin nhắn</h5>
+                        <p class="text-muted small" style="max-width: 400px;">
+                            Bạn có thể nhắn tin với bất kỳ ai: Giảng viên, Sinh viên, Cán bộ khoa (Trưởng khoa) hoặc Quản trị viên. Hãy chọn nút hỗ trợ phía trên hoặc bấm vào Giảng viên để bắt đầu cuộc trò chuyện!
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if selected_partner %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const partnerUid = "{{ selected_partner.uid }}";
+    const messagesBox = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const btnSend = document.getElementById('btnSendMessage');
+    const contactSearchInput = document.getElementById('contactSearchInput');
+
+    if (contactSearchInput) {
+        contactSearchInput.addEventListener('input', function() {
+            const kw = this.value.toLowerCase().trim();
+            const items = document.querySelectorAll('.contact-item');
+            items.forEach(item => {
+                const name = item.getAttribute('data-name');
+                if (!kw || name.includes(kw)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    let lastMessageCount = 0;
+
+    function loadMessages(shouldScroll = false) {
+        fetch(`/chat/api/messages/${partnerUid}`)
+            .then(res => res.json())
+            .then(data => {
+                const msgs = data.messages || [];
+                if (msgs.length !== lastMessageCount) {
+                    renderMessages(msgs);
+                    lastMessageCount = msgs.length;
+                    scrollToBottom();
+                } else if (shouldScroll) {
+                    scrollToBottom();
+                }
+            })
+            .catch(err => console.error("Lỗi tải tin nhắn:", err));
+    }
+
+    function renderMessages(messages) {
+        if (!messages.length) {
+            messagesBox.innerHTML = `
+                <div class="text-center py-5 text-muted small">
+                    <i class="fa-regular fa-comment-dots fa-2x mb-2 text-primary opacity-50"></i>
+                    <div>Hãy gửi lời chào đầu tiên đến <strong>{{ selected_partner.name }}</strong>!</div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        messages.forEach(m => {
+            const isMine = m.is_mine;
+            const timeStr = m.sent_at ? m.sent_at.substring(11, 16) : '';
+
+            html += `
+                <div class="message-row ${isMine ? 'mine' : 'theirs'}">
+                    <div>
+                        <div class="bubble shadow-sm">${escapeHtml(m.text)}</div>
+                        <div class="msg-time">${timeStr}</div>
+                    </div>
+                </div>
+            `;
+        });
+        messagesBox.innerHTML = html;
+    }
+
+    function scrollToBottom() {
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.innerText = text;
+        return div.innerHTML;
+    }
+
+    function sendMessage() {
+        const text = messageInput.value.trim();
+        if (!text) return;
+
+        messageInput.disabled = true;
+
+        fetch('/chat/api/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                receiver_uid: partnerUid,
+                text: text
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            messageInput.disabled = false;
+            messageInput.value = '';
+            messageInput.focus();
+            loadMessages(true);
+        })
+        .catch(err => {
+            messageInput.disabled = false;
+            alert('Không thể gửi tin nhắn. Vui lòng thử lại!');
+        });
+    }
+
+    btnSend.addEventListener('click', sendMessage);
+
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    loadMessages(true);
+    setInterval(loadMessages, 3000);
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Tìm người xử lý theo nhu cầu{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 text-center">
+                <h4 class="fw-bold text-primary mb-2">
+                    <i class="fa-solid fa-bullseye me-2"></i>Tìm người giải quyết công việc theo nhu cầu
+                </h4>
+                <p class="text-muted small mb-3">Nhập nhu cầu của bạn (ví dụ: hoãn thi, phúc khảo, thực tập, đồ án tốt nghiệp...)</p>
+                
+                <form method="GET" action="{{ url_for('student.topic_search') }}" class="input-group">
+                    <input type="text" name="keyword" class="form-control form-control-lg" placeholder="Nhập nhu cầu hoặc từ khóa..." value="{{ keyword }}" required autofocus>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">
+                        <i class="fa-solid fa-magnifying-glass me-2"></i>Định tuyến ngay
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <h5 class="fw-bold text-secondary mb-3">
+            Chủ đề phù hợp: <span class="badge bg-primary">{{ topics|length }}</span> kết quả
+        </h5>
+
+        {% if topics %}
+            <div class="row">
+                {% for t in topics %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm border-0 border-top border-primary border-4">
+                            <div class="card-body">
+                                <h5 class="fw-bold text-primary mb-2">{{ t.topic_name }}</h5>
+                                <p class="text-muted small mb-3">{{ t.description }}</p>
+
+                                <h6 class="fw-bold text-dark small mb-2"><i class="fa-solid fa-user-check me-1"></i>Đơn vị / Cá nhân tiếp nhận:</h6>
+                                {% for handler in t.handles %}
+                                    <div class="bg-light p-3 rounded mb-2 border">
+                                        <div class="fw-bold text-dark">{{ handler.name }}</div>
+                                        <div class="small text-muted mb-1">{{ handler.title or handler.location }}</div>
+                                        {% if handler.email %}
+                                            <div class="small"><i class="fa-solid fa-envelope me-1"></i>Email: <a href="mailto:{{ handler.email }}">{{ handler.email }}</a></div>
+                                        {% endif %}
+                                        {% if handler.phone %}
+                                            <div class="small"><i class="fa-solid fa-phone me-1"></i>Điện thoại: {{ handler.phone }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="fa-solid fa-folder-open fa-3x mb-3"></i>
+                <h5>Không tìm thấy chủ đề xử lý nào phù hợp.</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

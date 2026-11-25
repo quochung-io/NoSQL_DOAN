@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Thẻ Liên Lạc - {{ lecturer.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Cột trái: Thẻ tóm tắt thông tin Giảng viên -->
+    <div class="col-lg-4 mb-4">
+        <div class="card card-modern shadow-sm border-0 mb-3">
+            <div class="card-body text-center p-4">
+                <div class="avatar-wrapper mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem; background-color: #dbeafe; color: #2563eb;">
+                    {{ lecturer.name[:1] }}
+                </div>
+                <h4 class="fw-bold mb-1 text-dark">{{ lecturer.name }}</h4>
+                <p class="text-muted small mb-2">{{ lecturer.title }}</p>
+                {% if lecturer.is_head %}
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill mb-3">
+                        <i class="fa-solid fa-crown me-1"></i>Trưởng Bộ Môn
+                    </span>
+                {% endif %}
+
+                <!-- Nút Nhắn tin nhanh với Giảng viên -->
+                <div class="d-grid my-3">
+                    <a href="{{ url_for('chat.messenger', with=lecturer.uid) }}" class="btn btn-success rounded-pill fw-bold py-2 shadow-sm">
+                        <i class="fa-brands fa-facebook-messenger me-2"></i>Nhắn tin với Thầy/Cô
+                    </a>
+                </div>
+
+                <hr class="text-muted my-3">
+
+                <div class="text-start small">
+                    <p class="mb-2"><strong><i class="fa-solid fa-id-badge text-primary me-2"></i>Mã cán bộ:</strong> <code>{{ lecturer.code }}</code></p>
+                    <p class="mb-2"><strong><i class="fa-solid fa-building-columns text-primary me-2"></i>Khoa:</strong> {{ faculty.name }}</p>
+                    <p class="mb-2"><strong><i class="fa-solid fa-graduation-cap text-primary me-2"></i>Bộ môn:</strong> {{ lecturer.belongs_to.name }}</p>
+                    <p class="mb-0"><strong><i class="fa-solid fa-envelope text-primary me-2"></i>Email:</strong> <a href="mailto:{{ lecturer.email }}">{{ lecturer.email }}</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khung hỗ trợ khi không liên lạc được -->
+        <div class="card card-modern shadow-sm border-0 border-start border-danger border-4">
+            <div class="card-body p-3">
+                <h6 class="fw-bold text-danger mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Không liên lạc được?</h6>
+                <p class="small text-muted mb-3">Nếu Thầy/Cô đang vắng mặt hoặc ngoài giờ làm việc, hãy kích hoạt phương án thay thế.</p>
+                <a href="{{ url_for('student.lecturer_fallback', uid=lecturer.uid) }}" class="btn btn-outline-danger btn-sm w-100 rounded-pill fw-bold">
+                    <i class="fa-solid fa-route me-1"></i>Xem Chuỗi Thay Thế / Leo Thang
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột phải: Kênh liên lạc & Lớp học phần -->
+    <div class="col-lg-8">
+        <!-- Danh sách kênh liên lạc đã lọc phân quyền -->
+        <div class="card card-modern shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="fa-solid fa-comments text-primary me-2"></i>Kênh Liên Lạc & Giờ Tiếp Sinh Viên
+                    </h5>
+                    <small class="text-muted">Được phân quyền tự động theo quan hệ đào tạo trên CSDL đồ thị Dgraph</small>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kênh liên lạc</th>
+                                <th>Thông tin liên hệ</th>
+                                <th>Thời gian hoạt động</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ch in channels %}
+                                <tr>
+                                    <td>
+                                        {% if ch.channel_type == 'email' %}
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill"><i class="fa-solid fa-envelope me-1"></i>Email</span>
+                                        {% elif ch.channel_type == 'phone' %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill"><i class="fa-solid fa-phone me-1"></i>Điện thoại</span>
+                                        {% elif ch.channel_type == 'zalo' %}
+                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill"><i class="fa-solid fa-comment-dots me-1"></i>Zalo</span>
+                                        {% elif ch.channel_type == 'office_hours' %}
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill"><i class="fa-solid fa-door-open me-1"></i>Tại VP Bộ môn</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark border rounded-pill">{{ ch.channel_type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ ch.channel_value }}</div>
+                                        <small class="text-muted">
+                                            Quyền xem: 
+                                            {% if ch.visibility == 'all_students' %}
+                                                <span class="text-success"><i class="fa-solid fa-globe me-1"></i>Tất cả sinh viên</span>
+                                            {% elif ch.visibility == 'same_faculty' %}
+                                                <span class="text-primary"><i class="fa-solid fa-building me-1"></i>Cùng Khoa</span>
+                                            {% elif ch.visibility == 'enrolled_only' %}
+                                                <span class="text-warning-emphasis"><i class="fa-solid fa-user-lock me-1"></i>Chỉ SV lớp đang học</span>
+                                            {% else %}
+                                                <span class="text-danger">{{ ch.visibility }}</span>
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if ch.active_days %}
+                                            <div class="small fw-semibold">{{ ch.active_days|join(', ') }}</div>
+                                            <div class="small text-muted">{{ ch.start_time }} - {{ ch.end_time }}</div>
+                                        {% else %}
+                                            <span class="small text-muted">24/7 (Sẵn sàng)</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if ch.accessible %}
+                                            {% if ch.is_active_now %}
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                                    <i class="fa-solid fa-circle-check me-1"></i>Đang khả dụng
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-light text-secondary border rounded-pill">
+                                                    <i class="fa-solid fa-clock me-1"></i>{{ ch.status_message }}
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">
+                                                <i class="fa-solid fa-lock me-1"></i>{{ ch.status_message }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Chưa có kênh liên lạc nào được thiết lập.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Các lớp học phần Thầy/Cô đang giảng dạy -->
+        <div class="card card-modern shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-book-open text-primary me-2"></i>Các Lớp Học Phần Phụ Trách
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã Lớp HP</th>
+                                <th>Tên môn học</th>
+                                <th>Số tín chỉ</th>
+                                <th>Phòng học</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sec in lecturer.get('~taught_by', []) %}
+                                <tr>
+                                    <td><code>{{ sec.code }}</code></td>
+                                    <td class="fw-semibold text-dark">{{ sec.of_subject.name }} ({{ sec.of_subject.code }})</td>
+                                    <td>{{ sec.of_subject.credits }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ sec.room }}</span></td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-3 text-muted">Chưa có lớp học phần nào được phân công.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

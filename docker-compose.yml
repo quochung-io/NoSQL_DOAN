@@ -1,0 +1,37 @@
+services:
+  zero:
+    image: dgraph/dgraph:v23.1.0
+    container_name: dgraph-zero
+    volumes:
+      - dgraph_zero_data:/dgraph
+    ports:
+      - "5080:5080"
+      - "6080:6080"
+    restart: unless-stopped
+    command: dgraph zero --my=zero:5080
+
+  alpha:
+    image: dgraph/dgraph:v23.1.0
+    container_name: dgraph-alpha
+    volumes:
+      - dgraph_alpha_data:/dgraph
+    ports:
+      - "8080:8080"   # HTTP API
+      - "9080:9080"   # gRPC API
+    restart: unless-stopped
+    command: dgraph alpha --my=alpha:7080 --zero=zero:5080 --security "whitelist=0.0.0.0/0"
+    depends_on:
+      - zero
+
+  ratel:
+    image: dgraph/ratel:latest
+    container_name: dgraph-ratel
+    ports:
+      - "8000:8000"   # Web UI Ratel
+    restart: unless-stopped
+    depends_on:
+      - alpha
+
+volumes:
+  dgraph_zero_data:
+  dgraph_alpha_data:

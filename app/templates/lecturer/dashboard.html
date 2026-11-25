@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Bảng Điều Khiển Giảng Viên{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-address-book text-primary me-2"></i>Quản lý Kênh Liên Lạc & Người Tiếp Nhận Thay Thế
+            </h4>
+            <p class="text-muted small mb-0">Cấu hình thông tin tiếp sinh viên và thiết lập người thay thế khi vắng mặt</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('chat.messenger') }}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold">
+                <i class="fa-brands fa-facebook-messenger me-1"></i>Hộp thư tin nhắn
+            </a>
+            <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#addChannelModal">
+                <i class="fa-solid fa-plus me-1"></i>Thêm Kênh Mới
+            </button>
+        </div>
+    </div>
+</div>
+
+{% if lecturer %}
+<div class="row">
+    <!-- Cột trái: Thông tin cá nhân & Thiết lập chuỗi thay thế -->
+    <div class="col-lg-4 mb-4">
+        <!-- Thẻ thông tin cá nhân -->
+        <div class="card card-modern shadow-sm border-0 mb-4">
+            <div class="card-body text-center p-4">
+                <div class="avatar-wrapper mx-auto mb-3" style="width: 72px; height: 72px; font-size: 1.75rem; background-color: #dbeafe; color: #2563eb;">
+                    {{ lecturer.name[:1] }}
+                </div>
+                <h5 class="fw-bold text-dark mb-1">{{ lecturer.name }}</h5>
+                <p class="text-muted small mb-2">{{ lecturer.title }}</p>
+                <span class="badge bg-primary rounded-pill small mb-3">Mã cán bộ: {{ lecturer.code }}</span>
+                <p class="text-muted small mb-0"><i class="fa-solid fa-envelope me-1 text-primary"></i>{{ lecturer.email }}</p>
+            </div>
+        </div>
+
+        <!-- Thẻ Giảng viên tự thiết lập Người tiếp nhận thay thế (Escalates To) -->
+        <div class="card card-modern shadow-sm border-0 border-top border-warning border-4">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-stairs text-warning me-2"></i>Người Tiếp Nhận Thay Thế (Khi vắng mặt)
+                </h6>
+                <small class="text-muted">Khi sinh viên không liên lạc được, hệ thống sẽ tự động định tuyến đến người này</small>
+            </div>
+            <div class="card-body p-3">
+                <div class="mb-3 p-2 bg-light rounded small">
+                    <strong>Đang chọn:</strong> 
+                    {% set esc = lecturer.get('escalates_to') %}
+                    {% set esc_item = esc[0] if esc is iterable and esc is not mapping and esc|length > 0 else (esc if esc is mapping else None) %}
+                    {% if esc_item %}
+                        <span class="text-primary fw-bold">{{ esc_item.name }}</span> ({{ esc_item.title or 'Đơn vị phụ trách' }})
+                    {% else %}
+                        <span class="text-muted">Chưa thiết lập</span>
+                    {% endif %}
+                </div>
+
+                <form method="POST" action="{{ url_for('lecturer.update_escalation') }}">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Chọn người / văn phòng thay thế</label>
+                        <select name="target_uid" class="form-select form-select-sm" required>
+                            <option value="">-- Chọn Người / Đơn Vị Tiếp Nhận --</option>
+                            {% for c in all_candidates %}
+                                <option value="{{ c.uid }}" {% if esc_item and esc_item.uid == c.uid %}selected{% endif %}>
+                                    {{ c.name }} ({{ c.title or 'Giảng viên' }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-sm w-100 rounded-pill fw-bold text-dark">
+                        <i class="fa-solid fa-floppy-disk me-1"></i>Lưu Người Thay Thế
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột phải: Bảng danh sách kênh liên lạc -->
+    <div class="col-lg-8 mb-4">
+        <div class="card card-modern shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-dark">Danh Sách Kênh Liên Lạc & Giờ Khả Dụng</h5>
+                <span class="badge bg-light text-muted border rounded-pill">{{ channels|length }} kênh</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Loại kênh</th>
+                                <th>Nội dung</th>
+                                <th>Mức hiển thị</th>
+                                <th>Thời gian</th>
+                                <th class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ch in channels %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-light text-dark border text-uppercase">{{ ch.channel_type }}</span>
+                                    </td>
+                                    <td class="fw-semibold text-dark">{{ ch.channel_value }}</td>
+                                    <td>
+                                        {% if ch.visibility == 'all_students' %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Tất cả sinh viên</span>
+                                        {% elif ch.visibility == 'same_faculty' %}
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Cùng khoa</span>
+                                        {% elif ch.visibility == 'enrolled_only' %}
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">Chỉ SV lớp đang học</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Ẩn (Hidden)</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="fw-semibold d-block">{{ ch.active_days|join(', ') or '24/7' }}</small>
+                                        <small class="text-muted">{{ ch.start_time }} - {{ ch.end_time }}</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-outline-primary btn-sm rounded-circle me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ ch.uid }}" style="width: 32px; height: 32px; padding: 0;">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                        <form method="POST" action="{{ url_for('lecturer.delete_channel', channel_uid=ch.uid) }}" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa kênh này?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0;">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+
+                                <!-- Modal Sửa Kênh -->
+                                <div class="modal fade" id="editModal{{ ch.uid }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content rounded-4 border-0 shadow">
+                                            <form method="POST" action="{{ url_for('lecturer.update_channel', channel_uid=ch.uid) }}">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">Chỉnh sửa kênh liên lạc ({{ ch.channel_type }})</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-semibold">Nội dung liên hệ (SĐT / Email / Địa điểm)</label>
+                                                        <input type="text" name="channel_value" class="form-control" value="{{ ch.channel_value }}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-semibold">Mức hiển thị</label>
+                                                        <select name="visibility" class="form-select">
+                                                            <option value="all_students" {% if ch.visibility == 'all_students' %}selected{% endif %}>Tất cả sinh viên (all_students)</option>
+                                                            <option value="same_faculty" {% if ch.visibility == 'same_faculty' %}selected{% endif %}>Sinh viên cùng Khoa (same_faculty)</option>
+                                                            <option value="enrolled_only" {% if ch.visibility == 'enrolled_only' %}selected{% endif %}>Chỉ sinh viên lớp đang học (enrolled_only)</option>
+                                                            <option value="hidden" {% if ch.visibility == 'hidden' %}selected{% endif %}>Ẩn kênh này (hidden)</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-semibold">Khung giờ hoạt động</label>
+                                                        <div class="row g-2">
+                                                            <div class="col-6">
+                                                                <input type="time" name="start_time" class="form-control" value="{{ ch.start_time }}">
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <input type="time" name="end_time" class="form-control" value="{{ ch.end_time }}">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-primary rounded-pill fw-bold">Lưu thay đổi</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Kênh Mới -->
+<div class="modal fade" id="addChannelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <form method="POST" action="{{ url_for('lecturer.add_channel') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Thêm Kênh Liên Lạc Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Loại kênh</label>
+                        <select name="channel_type" class="form-select">
+                            <option value="email">Email</option>
+                            <option value="phone">Điện thoại</option>
+                            <option value="zalo">Zalo</option>
+                            <option value="teams">Microsoft Teams</option>
+                            <option value="office_hours">Tiếp sinh viên tại Văn phòng</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Thông tin liên hệ (SĐT, Email, Phòng)</label>
+                        <input type="text" name="channel_value" class="form-control" placeholder="0912345678, P.301-A1..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mức hiển thị</label>
+                        <select name="visibility" class="form-select">
+                            <option value="all_students">Tất cả sinh viên (all_students)</option>
+                            <option value="same_faculty">Sinh viên cùng Khoa (same_faculty)</option>
+                            <option value="enrolled_only">Chỉ sinh viên lớp đang học (enrolled_only)</option>
+                            <option value="hidden">Ẩn hoàn toàn (hidden)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ngày hoạt động</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for d in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="active_days" value="{{ d }}" id="day_{{ d }}" checked>
+                                    <label class="form-check-label small" for="day_{{ d }}">{{ d }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Giờ bắt đầu</label>
+                            <input type="time" name="start_time" class="form-control" value="08:00">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Giờ kết thúc</label>
+                            <input type="time" name="end_time" class="form-control" value="17:00">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary rounded-pill fw-bold">Thêm kênh</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

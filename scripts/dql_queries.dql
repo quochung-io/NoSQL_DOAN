@@ -1,0 +1,170 @@
+# ==============================================================================
+# BỘ CÂU TRUY VẤN DQL (DGRAPH QUERY LANGUAGE) CHO ĐỀ TÀI
+# Dùng để chạy trực tiếp trên Console của Dgraph Ratel (http://localhost:8000)
+# và chụp ảnh màn hình minh chứng cho Báo cáo (Mục 5 và Mục 7 của Barem).
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# PHẦN 1: TRUY VẤN CƠ BẢN (BASIC QUERIES - 0.5 điểm)
+# ------------------------------------------------------------------------------
+
+# Truy vấn 1.1: Lấy danh sách tất cả các Khoa cùng các Ngành đào tạo trực thuộc
+query GetAllFacultiesAndMajors {
+  faculties(func: type(Faculty)) {
+    uid
+    faculty_code: code
+    faculty_name: name
+    has_major {
+      uid
+      major_code: code
+      major_name: name
+    }
+  }
+}
+
+# Truy vấn 1.2: Tìm kiếm giảng viên theo tên (sử dụng toán tử allofterms)
+query SearchLecturerByName {
+  lecturers(func: allofterms(name, "Nguyễn Văn")) @filter(type(Lecturer)) {
+    uid
+    code
+    name
+    email
+    title
+    belongs_to {
+      major_name: name
+    }
+  }
+}
+
+# Truy vấn 1.3: Lấy thông tin chi tiết một môn học và các lớp học phần đang mở
+query GetSubjectAndSections {
+  subject(func: eq(code, "IS302")) @filter(type(Subject)) {
+    code
+    name
+    credits
+    ~of_subject {
+      code
+      semester
+      room
+      taught_by {
+        name
+        email
+      }
+    }
+  }
+}
+
+# Truy vấn 1.4: Lấy danh sách các kênh liên lạc của một giảng viên
+query GetLecturerChannels {
+  lecturer(func: eq(code, "GV01")) @filter(type(Lecturer)) {
+    name
+    title
+    has_channel {
+      channel_type
+      channel_value
+      visibility
+      active_days
+      start_time
+      end_time
+    }
+  }
+}
+
+
+# ------------------------------------------------------------------------------
+# PHẦN 2: TRUY VẤN NÂNG CAO (ADVANCED QUERIES - 0.5 điểm)
+# ------------------------------------------------------------------------------
+
+# Truy vấn 2.1: [ĐỊNH TUYẾN LEO THANG] Truy vấn đệ quy chuỗi người thay thế (Escalation Chain)
+# Sử dụng chỉ thị @recurse để duyệt toàn bộ chuỗi: Giảng viên -> Trưởng bộ môn -> Văn phòng khoa
+query GetEscalationChain {
+  escalation(func: eq(code, "GV02")) @filter(type(Lecturer)) @recurse(depth: 5) {
+    name
+    title
+    email
+    phone
+    location
+    escalates_to
+    has_channel {
+      channel_type
+      channel_value
+      visibility
+    }
+  }
+}
+
+# Truy vấn 2.2: [PHÂN QUYỀN NGỮ CẢNH] Kiểm tra quan hệ học phần để lọc kênh liên lạc
+# Tìm giảng viên giảng dạy lớp học phần mà sinh viên (sv_20210001) đang theo học.
+# Đây là nền tảng để mở khóa các kênh có visibility = 'enrolled_only'.
+query CheckStudentLecturerRelationship {
+  var(func: eq(username, "sv_20210001")) @filter(type(User)) {
+    enrolled_in {
+      taught_by {
+        EnrolledLecturers as uid
+      }
+    }
+    in_faculty {
+      StudentFaculty as uid
+    }
+  }
+
+  my_lecturers(func: uid(EnrolledLecturers)) {
+    code
+    name
+    email
+    belongs_to {
+      major_name: name
+      ~has_major @filter(uid(StudentFaculty)) {
+        faculty_name: name
+      }
+    }
+    has_channel {
+      channel_type
+      channel_value
+      visibility
+    }
+  }
+}
+
+# Truy vấn 2.3: [TÌM THEO NHU CẦU] Truy vấn Topic tìm người/đơn vị xử lý và kênh liên lạc ưu tiên
+# Sử dụng full-text/term matching để sinh viên chỉ cần gõ "hoãn thi" hoặc "đồ án"
+query RouteByNeedTopic {
+  topics(func: anyofterms(topic_name, "hoãn thi phúc khảo")) @filter(type(Topic)) {
+    topic_name
+    description
+    handles {
+      name
+      location
+      has_channel {
+        channel_type
+        channel_value
+        visibility
+        active_days
+        start_time
+        end_time
+      }
+    }
+  }
+}
+
+# Truy vấn 2.4: [TRỰC QUAN HÓA TOÀN BỘ CÂY ĐỒ THỊ ĐÀO TẠO]
+# Truy vấn đa tầng: Khoa -> Ngành -> Giảng viên -> Môn học -> Lớp học phần
+# Phục vụ vẽ đồ thị mạng lưới trên GUI Ratel và ứng dụng web (vis.js)
+query GetFullAcademicGraph {
+  faculties(func: type(Faculty)) {
+    faculty_name: name
+    has_major {
+      major_name: name
+      ~belongs_to {
+        lecturer_name: name
+        title
+        ~taught_by {
+          section_code: code
+          of_subject {
+            subject_name: name
+          }
+        }
+      }
+    }
+  }
+}

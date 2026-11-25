@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Nhật Ký Truy Cập AccessLog{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="fw-bold text-dark mb-1">
+            <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Nhật Ký Truy Cập Hệ Thống (AccessLog)
+        </h4>
+        <p class="text-muted small">Mỗi khi người dùng tra cứu thẻ giảng viên, hệ thống tự động ghi nhật ký vào CSDL đồ thị</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card card-modern shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Thời gian truy cập (UTC)</th>
+                                <th>Tài khoản sinh viên</th>
+                                <th>Họ tên</th>
+                                <th>Giảng viên được tra cứu</th>
+                                <th>Mã cán bộ</th>
+                                <th>Email giảng viên</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                                <tr>
+                                    <td><code>{{ log.viewed_at[:19] if log.viewed_at else '-' }}</code></td>
+                                    <td><span class="badge bg-light text-dark border">{{ log.viewer_username }}</span></td>
+                                    <td>{{ log.viewer_name }}</td>
+                                    <td class="fw-bold text-primary">{{ log.target_name }}</td>
+                                    <td><code>{{ log.target_code }}</code></td>
+                                    <td>{{ log.target_email }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">Chưa có bản ghi AccessLog nào.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

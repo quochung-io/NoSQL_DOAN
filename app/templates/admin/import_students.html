@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Import Sinh Viên từ CSV{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white py-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-file-csv me-2"></i>Import Danh Sách Tài Khoản Sinh Viên</h5>
+            </div>
+            <div class="card-body p-4">
+                <p class="small text-muted mb-3">
+                    Hệ thống sẽ tự động tạo tài khoản với mật khẩu mặc định <code>Sv@123</code> (được mã hóa bằng bcrypt), gán cờ <code>must_change_password = true</code> và liên kết vào Khoa tương ứng.
+                </p>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Chọn file CSV dữ liệu sinh viên</label>
+                        <input type="file" name="file" class="form-control" accept=".csv" required>
+                        <small class="text-muted d-block mt-1">Cấu trúc cột yêu cầu: <code>student_id,full_name,email,faculty_code</code></small>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-success fw-bold py-2">
+                            <i class="fa-solid fa-upload me-2"></i>Bắt Đầu Import Dữ Liệu
+                        </button>
+                    </div>
+                </form>
+
+                <div class="alert alert-light border small mb-0">
+                    <strong>Gợi ý:</strong> Bạn có thể sử dụng file mẫu có sẵn tại thư mục: <code>data_sample/students.csv</code>.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

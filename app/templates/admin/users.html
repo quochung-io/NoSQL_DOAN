@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Toàn Bộ Người Dùng (Admin){% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-users text-primary me-2"></i>Quản lý Tài Khoản Người Dùng Toàn Trường
+            </h4>
+            <p class="text-muted small mb-0">Admin xem và quản trị toàn bộ Giảng viên, Cán bộ khoa và Sinh viên</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.import_students') }}" class="btn btn-success btn-sm rounded-pill px-3 fw-semibold">
+                <i class="fa-solid fa-file-csv me-1"></i>Import Sinh Viên (CSV)
+            </a>
+            <a href="{{ url_for('admin.manage_topics') }}" class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold">
+                <i class="fa-solid fa-bullseye me-1"></i>Quản lý Chủ Đề N - N
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Bộ lọc theo vai trò (Tabs) -->
+<div class="row mb-3">
+    <div class="col-12">
+        <ul class="nav nav-pills gap-2">
+            <li class="nav-item">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if not selected_role %}active{% else %}bg-white border text-dark{% endif %}" href="{{ url_for('admin.user_list') }}">
+                    Tất cả người dùng
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if selected_role == 'lecturer' %}active{% else %}bg-white border text-dark{% endif %}" href="{{ url_for('admin.user_list', role='lecturer') }}">
+                    <i class="fa-solid fa-chalkboard-user me-1"></i>Giảng viên
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if selected_role == 'staff' %}active{% else %}bg-white border text-dark{% endif %}" href="{{ url_for('admin.user_list', role='staff') }}">
+                    <i class="fa-solid fa-building-columns me-1"></i>Cán bộ khoa (Trưởng khoa)
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if selected_role == 'student' %}active{% else %}bg-white border text-dark{% endif %}" href="{{ url_for('admin.user_list', role='student') }}">
+                    <i class="fa-solid fa-user-graduate me-1"></i>Sinh viên
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if selected_role == 'admin' %}active{% else %}bg-white border text-dark{% endif %}" href="{{ url_for('admin.user_list', role='admin') }}">
+                    <i class="fa-solid fa-shield-halved me-1"></i>Quản trị viên
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card card-modern border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tài khoản</th>
+                                <th>Họ và tên</th>
+                                <th>Vai trò</th>
+                                <th>Khoa trực thuộc</th>
+                                <th>Trạng thái</th>
+                                <th>Đổi MK lần đầu</th>
+                                <th class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                                <tr>
+                                    <td>
+                                        <code class="fw-bold text-dark">{{ u.username }}</code>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ u.full_name }}</div>
+                                        <small class="text-muted">{{ u.email }}</small>
+                                    </td>
+                                    <td>
+                                        {% if u.role == 'admin' %}
+                                            <span class="badge bg-dark rounded-pill">ADMIN</span>
+                                        {% elif u.role == 'staff' %}
+                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill">CÁN BỘ KHOA</span>
+                                        {% elif u.role == 'lecturer' %}
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">GIẢNG VIÊN</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-secondary border rounded-pill">SINH VIÊN</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.faculty_code and u.faculty_code != '-' %}
+                                            <span class="badge bg-light text-dark border">{{ u.faculty_code }}</span>
+                                        {% else %}
+                                            <span class="text-muted small">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.is_active %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                                <i class="fa-solid fa-circle-check me-1"></i>Hoạt động
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">
+                                                <i class="fa-solid fa-circle-xmark me-1"></i>Đã khóa
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.must_change_password %}
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">
+                                                <i class="fa-solid fa-clock me-1"></i>Bắt buộc
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted small"><i class="fa-solid fa-check text-success me-1"></i>Đã đổi</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <!-- Nút Nhắn tin nhanh với người này -->
+                                        <a href="{{ url_for('chat.messenger', with=u.uid) }}" class="btn btn-outline-success btn-sm rounded-circle me-1" title="Nhắn tin với người này" style="width: 32px; height: 32px; padding: 0; line-height: 30px;">
+                                            <i class="fa-brands fa-facebook-messenger"></i>
+                                        </a>
+
+                                        <!-- Khóa / Mở khóa -->
+                                        <form method="POST" action="{{ url_for('admin.toggle_user', uid=u.uid) }}" class="d-inline">
+                                            {% if u.is_active %}
+                                                <button type="submit" class="btn btn-outline-warning btn-sm rounded-circle me-1" title="Khóa tài khoản" style="width: 32px; height: 32px; padding: 0;">
+                                                    <i class="fa-solid fa-lock"></i>
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-outline-success btn-sm rounded-circle me-1" title="Mở khóa tài khoản" style="width: 32px; height: 32px; padding: 0;">
+                                                    <i class="fa-solid fa-lock-open"></i>
+                                                </button>
+                                            {% endif %}
+                                        </form>
+
+                                        <!-- Reset mật khẩu -->
+                                        <form method="POST" action="{{ url_for('admin.reset_password', uid=u.uid) }}" class="d-inline" onsubmit="return confirm('Đặt lại mật khẩu cho tài khoản này về Sv@123?');">
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm rounded-circle" title="Đặt lại mật khẩu" style="width: 32px; height: 32px; padding: 0;">
+                                                <i class="fa-solid fa-key"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">Không tìm thấy tài khoản người dùng nào.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

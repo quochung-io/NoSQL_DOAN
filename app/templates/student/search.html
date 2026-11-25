@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Tra cứu Giảng viên{% endblock %}
+
+{% block content %}
+<!-- Banner tìm kiếm -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card card-modern shadow-sm border-0 p-3 p-md-4">
+            <h4 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-magnifying-glass text-primary me-2"></i>Tra cứu Thông Tin & Kênh Liên Lạc Giảng Viên
+            </h4>
+            <p class="text-muted small mb-3">Tìm nhanh theo tên giảng viên, khoa, chuyên ngành hoặc môn học phụ trách</p>
+            
+            <form method="GET" action="{{ url_for('student.search') }}" class="row g-2 g-md-3">
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary">Tên hoặc mã giảng viên</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
+                        <input type="text" name="keyword" class="form-control border-start-0" placeholder="Ví dụ: Nguyễn Văn, GV01..." value="{{ keyword }}">
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-secondary">Khoa quản lý</label>
+                    <select name="faculty" class="form-select">
+                        <option value="">-- Tất cả các Khoa --</option>
+                        {% for f in faculties %}
+                            <option value="{{ f.code }}" {% if selected_faculty == f.code %}selected{% endif %}>{{ f.name }} ({{ f.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-secondary">Môn học phụ trách</label>
+                    <select name="subject" class="form-select">
+                        <option value="">-- Tất cả môn học --</option>
+                        {% for s in subjects %}
+                            <option value="{{ s.code }}" {% if selected_subject == s.code %}selected{% endif %}>{{ s.code }} - {{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-semibold py-2">
+                        <i class="fa-solid fa-filter me-1"></i>Tìm kiếm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Danh sách giảng viên tìm thấy -->
+<div class="row">
+    <div class="col-12 mb-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0 text-muted">
+            Tìm thấy <span class="badge bg-primary rounded-pill">{{ lecturers|length }}</span> giảng viên
+        </h6>
+    </div>
+
+    {% if lecturers %}
+        {% for gv in lecturers %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card card-modern h-100 shadow-sm border-0 card-hover p-3">
+                    <div class="card-body p-2 d-flex flex-column">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="avatar-wrapper me-3" style="width: 52px; height: 52px; font-size: 1.25rem; background-color: #dbeafe; color: #2563eb;">
+                                {{ gv.name[:1] }}
+                            </div>
+                            <div class="overflow-hidden">
+                                <h6 class="fw-bold mb-1 text-dark text-truncate">{{ gv.name }}</h6>
+                                <span class="badge bg-light text-primary border rounded-pill small mb-1">{{ gv.title or 'Giảng viên' }}</span>
+                                {% if gv.is_head %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill small">
+                                        <i class="fa-solid fa-crown me-1"></i>Trưởng BM
+                                    </span>
+                                {% endif %}
+                                <div class="text-muted small"><i class="fa-solid fa-id-badge me-1"></i>Mã GV: <code>{{ gv.code }}</code></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 small">
+                            <div class="text-muted mb-1 text-truncate">
+                                <i class="fa-solid fa-building-columns text-primary me-2"></i>{{ gv.faculty.name or 'Chưa phân khoa' }}
+                            </div>
+                            <div class="text-muted text-truncate">
+                                <i class="fa-solid fa-graduation-cap text-primary me-2"></i>{{ gv.major.name or 'Chưa phân bộ môn' }}
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-2 d-flex gap-2">
+                            <a href="{{ url_for('student.lecturer_detail', uid=gv.uid) }}" class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1 fw-semibold">
+                                <i class="fa-solid fa-address-card me-1"></i>Xem thẻ
+                            </a>
+                            <a href="{{ url_for('chat.messenger', with=gv.uid) }}" class="btn btn-success btn-sm rounded-pill px-3 fw-semibold" title="Nhắn tin với Giảng viên">
+                                <i class="fa-brands fa-facebook-messenger me-1"></i>Nhắn tin
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="fa-solid fa-user-slash fa-3x text-muted mb-3 opacity-50"></i>
+            <h6 class="text-muted">Không tìm thấy giảng viên nào phù hợp với điều kiện tìm kiếm.</h6>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+code,name,credits,major_code
+INT101,Cơ sở lập trình,3,KTPM
+INT102,Kiến trúc phần mềm,3,KTPM
+INT103,Kiểm thử phần mềm,3,KTPM
+INT104,Công nghệ Web nâng cao,3,KTPM
+INT105,Phát triển ứng dụng di động,3,KTPM
+CS201,Cấu trúc dữ liệu và giải thuật,4,KHMT
+CS202,Trí tuệ nhân tạo,3,KHMT
+CS203,Học máy cơ bản,3,KHMT
+CS204,Xử lý ảnh và thị giác máy,3,KHMT
+CS205,Xử lý ngôn ngữ tự nhiên,3,KHMT
+IS301,Cơ sở dữ liệu nâng cao,3,HTTT
+IS302,Cơ sở dữ liệu đồ thị và NoSQL,3,HTTT
+IS303,Phân tích thiết kế HTTT,3,HTTT
+IS304,Khai phá dữ liệu lớn,3,HTTT
+IS305,An toàn bảo mật HTTT,3,HTTT
+BA401,Quản trị học đại cương,3,QTKD
+BA402,Quản trị chuỗi cung ứng,3,QTKD
+BA403,Quản trị nhân sự,3,QTKD
+BA404,Marketing căn bản,3,QTKD
+BA405,Hành vi tổ chức,3,QTKD
+FN501,Tài chính doanh nghiệp,3,TCNH
+FN502,Thị trường tài chính & các định chế,3,TCNH
+FN503,Phân tích báo cáo tài chính,3,TCNH
+FN504,Thẩm định dự án đầu tư,3,TCNH
+FN505,Quản trị rủi ro tài chính,3,TCNH

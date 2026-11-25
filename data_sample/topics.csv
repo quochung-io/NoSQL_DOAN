@@ -1,0 +1,11 @@
+topic_name,handler_type,handler_code,description
+Xin hoãn thi kết thúc học phần,OFFICE,Văn phòng Phòng Đào tạo,Tiếp nhận đơn và minh chứng xin hoãn thi vì lý do bất khả kháng
+Phúc khảo điểm thi,OFFICE,Văn phòng Phòng Đào tạo,Nhận đơn khiếu nại và phúc khảo bài thi học kỳ
+Xin giấy giới thiệu thực tập,OFFICE,Văn phòng Khoa CNTT,Cấp giấy giới thiệu sinh viên đi thực tập doanh nghiệp
+Đăng ký môn học bổ sung / rút môn,OFFICE,Văn phòng Phòng Đào tạo,Xử lý đăng ký quá hạn hoặc hủy học phần
+Đăng ký làm đồ án tốt nghiệp,LECTURER,GV01,Tư vấn đăng ký đề tài và phân công giảng viên hướng dẫn tốt nghiệp ngành KTPM
+Tư vấn hướng nghiên cứu Trí tuệ nhân tạo,LECTURER,GV06,Tư vấn lab nghiên cứu và đề tài AI/Data Science
+Giải đáp thắc mắc điểm quá trình Môn Lập trình,LECTURER,GV02,Giải quyết khiếu nại điểm chuyên cần và bài tập lớn INT101
+Tư vấn khởi nghiệp và định hướng nghề nghiệp,LECTURER,GV16,Hỗ trợ kết nối doanh nghiệp và cố vấn ý tưởng khởi nghiệp kinh doanh
+Tư vấn chứng chỉ tài chính CFA / CPA,LECTURER,GV21,Hướng dẫn lộ trình ôn tập và chứng chỉ chuyên ngành tài chính
+Cố vấn học tập và rèn luyện sinh viên,OFFICE,Văn phòng Khoa CNTT,Tư vấn xử lý điểm rèn luyện và hỗ trợ tâm lý học đường
