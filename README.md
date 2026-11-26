@@ -12,8 +12,8 @@ Tài liệu báo cáo chi tiết theo Barem chấm điểm: Xem tại file [NOI_
   - `set_schema.py`: Thiết lập Schema, Types và Indexes trên Dgraph.
   - `seed_data.py`: Đọc CSV và đẩy dữ liệu mẫu vào Dgraph qua Mutation gRPC.
   - `dql_queries.dql`: Bộ câu lệnh DQL cơ bản và nâng cao để chạy và chụp ảnh trên Ratel.
-  - `export_backup.py`: Script sao lưu / export dữ liệu ra JSON.
-  - `restore_data.py`: Script phục hồi dữ liệu từ bản backup.
+  - `export_backup.py`: Sao lưu các node và quan hệ thuộc toàn bộ 11 loại dữ liệu Dgraph ra JSON.
+  - `restore_data.py`: Khôi phục Schema và dữ liệu từ `scripts/backup_data.json`; nếu chưa có file backup, script nạp lại dữ liệu mẫu.
 - `app/`: Ứng dụng Flask phân tầng hoàn chỉnh (DAO, Services, Routes, Templates).
 - `run.py`: Điểm khởi chạy ứng dụng web.
 
@@ -52,7 +52,33 @@ Mở trình duyệt truy cập: **[http://localhost:5000](http://localhost:5000)
 
 ---
 
-## 3. Danh sách tài khoản đăng nhập mẫu (4 Roles)
+## 3. Backup, tải bản sao lưu và Restore
+
+Đăng nhập bằng tài khoản Admin, mở **Quản trị → Backup & Restore** tại `/admin/backup`:
+
+1. Chọn **Xuất Bản Sao Lưu Ngay** để export dữ liệu Dgraph ra `scripts/backup_data.json`. Bản sao lưu bao gồm các node và quan hệ của Khoa, Ngành, Văn phòng, Giảng viên, Môn học, Lớp học phần, Kênh liên lạc, Chủ đề, Tài khoản, Nhật ký truy cập và Tin nhắn.
+2. Chọn **Tải File backup_data.json** để tải bản sao lưu về máy.
+3. Chọn **Phục Hồi Dữ Liệu** để thiết lập lại Schema và khôi phục từ file `scripts/backup_data.json`.
+4. Nút **Giả Lập Sự Cố (Drop All)** xóa toàn bộ dữ liệu Dgraph. Chỉ dùng để demo sau khi đã tạo backup; sau đó chọn Restore để phục hồi.
+
+Có thể chạy các script trực tiếp từ thư mục gốc dự án:
+```bash
+python scripts/export_backup.py
+python scripts/restore_data.py
+```
+
+Nếu chưa có `scripts/backup_data.json`, lệnh Restore sẽ thiết lập lại Schema rồi nạp dữ liệu mẫu bằng `seed_data.py` thay vì khôi phục một bản backup.
+
+---
+
+## 4. Các cập nhật quản trị
+
+- Admin reset mật khẩu về mật khẩu mặc định theo vai trò: `Admin@123`, `Canbo@123`, `Gv@123` hoặc `Sv@123`. Tài khoản được yêu cầu đổi mật khẩu ở lần đăng nhập tiếp theo.
+- Import CSV sinh viên chấp nhận cả UTF-8 thông thường và UTF-8 có BOM (thường gặp khi lưu CSV bằng Excel).
+
+---
+
+## 5. Danh sách tài khoản đăng nhập mẫu (4 Roles)
 
 | Vai trò | Tên đăng nhập | Mật khẩu mặc định | Quyền hạn và phạm vi hiển thị |
 | :--- | :--- | :--- | :--- |
