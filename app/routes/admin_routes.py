@@ -1,6 +1,7 @@
 import io
+import os
 import csv
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, send_file
 from app.auth import login_required, role_required, hash_password
 from app.dao.user_dao import UserDAO
 from app.dao.log_dao import LogDAO
@@ -120,8 +121,15 @@ def reset_password(uid):
     try:
         user = UserDAO.get_by_uid(uid)
         if user:
-            UserDAO.reset_password(uid, 'Sv@123')
-            flash(f'Đã đặt lại mật khẩu cho {user.get("username")} thành "Sv@123" (bắt buộc đổi khi đăng nhập).', 'success')
+            default_passwords = {
+                'admin': 'Admin@123',
+                'staff': 'Canbo@123',
+                'lecturer': 'Gv@123',
+                'student': 'Sv@123'
+            }
+            default_password = default_passwords.get(user.get('role'), 'Sv@123')
+            UserDAO.reset_password(uid, default_password)
+            flash(f'Đã đặt lại mật khẩu cho {user.get("username")} thành "{default_password}" (bắt buộc đổi khi đăng nhập).', 'success')
         else:
             flash('Không tìm thấy tài khoản người dùng.', 'warning')
     except Exception as e:
@@ -139,7 +147,7 @@ def import_students():
             return render_template('admin/import_students.html')
 
         try:
-            stream = io.StringIO(file.stream.read().decode("utf-8"), newline=None)
+            stream = io.StringIO(file.stream.read().decode("utf-8-sig"), newline=None)
             reader = csv.DictReader(stream)
 
             faculties = {f['code']: f['uid'] for f in LecturerDAO.get_all_faculties_and_majors()}
@@ -207,6 +215,16 @@ def backup_restore():
                 flash(f'Lỗi giả lập: {e}', 'danger')
 
     return render_template('admin/backup.html')
+
+@admin_bp.route('/backup/download')
+@login_required
+@role_required('admin')
+def download_backup():
+    filepath = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'scripts', 'backup_data.json')
+    if not os.path.isfile(filepath):
+        flash('Chưa có bản sao lưu. Hãy bấm Xuất bản sao lưu trước.', 'warning')
+        return redirect(url_for('admin.backup_restore'))
+    return send_file(filepath, as_attachment=True, download_name='backup_data.json', mimetype='application/json')
 
 @admin_bp.route('/logs')
 @login_required

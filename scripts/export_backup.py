@@ -18,27 +18,58 @@ def export_json_backup(output_file='backup_data.json'):
         query GetAllData {
           faculties(func: type(Faculty)) {
             uid
-            expand(_all_) {
-              uid
-              expand(_all_)
-            }
+            dgraph.type
+            expand(_all_)
           }
           users(func: type(User)) {
             uid
-            username
-            full_name
-            email
-            role
-            must_change_password
-            is_active
-            in_faculty { uid }
-            enrolled_in { uid }
+            dgraph.type
+            expand(_all_)
           }
           topics(func: type(Topic)) {
             uid
-            topic_name
-            description
-            handles { uid }
+            dgraph.type
+            expand(_all_)
+          }
+          majors(func: type(Major)) {
+            uid
+            dgraph.type
+            expand(_all_)
+          }
+          offices(func: type(Office)) {
+            uid
+            dgraph.type
+            expand(_all_)
+          }
+          lecturers(func: type(Lecturer)) {
+            uid
+            dgraph.type
+            expand(_all_)
+          }
+          subjects(func: type(Subject)) {
+            uid
+            dgraph.type
+            expand(_all_)
+          }
+          sections(func: type(Section)) {
+            uid
+            dgraph.type
+            expand(_all_)
+          }
+          channels(func: type(Channel)) {
+            uid
+            dgraph.type
+            expand(_all_)
+          }
+          access_logs(func: type(AccessLog)) {
+            uid
+            dgraph.type
+            expand(_all_)
+          }
+          messages(func: type(Message)) {
+            uid
+            dgraph.type
+            expand(_all_)
           }
         }
         """
